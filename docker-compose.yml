@@ -5,19 +5,20 @@ services:
     build: ./innotter_django
     volumes:
       - ./innotter_django:/innotter_django
-    expose:
-      - "8000"
     ports:
       - "8000:8000"
-    command: sh -c "poetry install && poetry run python manage.py migrate && poetry run python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "poetry run python manage.py migrate && poetry run python manage.py runserver 0.0.0.0:8000"
     depends_on:
       - postgres
 
   postgres:
     container_name: pgdb
     image: postgres
-    env_file:
-      - ./innotter_django/.env
+    environment:
+      - POSTGRES_DB=db_name
+      - POSTGRES_USER=db_user
+      - POSTGRES_PASSWORD=password
+      - DB_HOST=postgres
 
   pgadmin:
     container_name: pgadmin4_container
