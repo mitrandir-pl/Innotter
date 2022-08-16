@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'pages',
     'posts',
     'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
