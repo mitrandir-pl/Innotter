@@ -1,3 +1,13 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from pages.serializers import PageSerializer, TagSerializer
+from pages.models import Page, Tag
 
-# Create your views here.
+
+class PageViewSet(viewsets.ModelViewSet):
+    serializer_class = PageSerializer
+    queryset = Page.objects.all()
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    serializer_class = TagSerializer
+    queryset = Tag.objects.all()
