@@ -9,4 +9,5 @@ router.register('users', viewset=views.UserViewSet, basename='users')
 urlpatterns = [
     path('', include(router.urls)),
     path('login/', views.LoginView.as_view(), name='login'),
+    path('refresh_token/', views.RefreshTokenView.as_view(), name='refresh_token'),
 ]
