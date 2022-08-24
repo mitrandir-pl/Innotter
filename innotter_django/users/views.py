@@ -1,12 +1,13 @@
 import jwt
 from django.conf import settings
 from rest_framework import viewsets, exceptions
-from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from users.serializers import UserSerializer
 from users.models import User
 from users.auth import generate_refresh_token, generate_access_token
+from users.permissions import IsAdmin, IsModerator, IsOwner
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -17,17 +18,20 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == 'create':
-            permission_classes = [AllowAny]
-        else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
+        permissions = {
+            'create': [AllowAny],
+            'list': [AllowAny],
+            'retrieve': [AllowAny],
+            'login': [AllowAny],
+            'refresh_token': [AllowAny],
+        }
+        permissions_for_action = permissions.get(
+            self.action, [IsAuthenticated]
+        )
+        return [permission() for permission in permissions_for_action]
 
-
-class LoginView(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
+    @action(detail=False, methods=['post'])
+    def login(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
         response = Response()
@@ -55,11 +59,8 @@ class LoginView(APIView):
 
         return response
 
-
-class RefreshTokenView(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
+    @action(detail=False, methods=['post'])
+    def refresh_token(self, request):
         refresh_token = request.COOKIES.get('refreshtoken')
         if refresh_token is None:
             raise exceptions.AuthenticationFailed(

@@ -14,8 +14,12 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
+
+    def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data)
+        for (key, value) in validated_data.items():
+            setattr(instance, key, value)
         if password is not None:
             instance.set_password(password)
         instance.save()
