@@ -1,3 +1,5 @@
+from enum import unique
+
 from rest_framework import serializers
 from users.models import User
 
@@ -24,3 +26,16 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+
+class UserLoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'email', 'password',
+        )
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }

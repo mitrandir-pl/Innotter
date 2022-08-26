@@ -4,26 +4,23 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 class CustomUserManager(BaseUserManager):
 
-    def create_superuser(self, email, user_name,
+    def create_superuser(self, email, username,
                          password, **other_fields):
 
-        other_fields.setdefault('is_staff', True)
-        other_fields.setdefault('is_superuser', True)
-        other_fields.setdefault('is_active', True)
+        map(lambda field: other_fields.setdefault(field, True),
+            ('is_staff', 'is_superuser', 'is_active'))
 
-        if other_fields.get('is_staff') is not True:
-            raise ValueError(
-                'Superuser must be assigned to is_staff=True.'
-            )
-        if other_fields.get('is_superuser') is not True:
-            raise ValueError(
-                'Superuser must be assigned to is_superuser=True.'
-            )
+        permissions = ('is_staff', 'is_superuser')
+        for permission in permissions:
+            if other_fields.get(permission) is not True:
+                raise ValueError(
+                    f'Superuser must be assigned to {permission}=True.'
+                )
 
-        return self.create_user(email, user_name,
+        return self.create_user(email, username,
                                 password, **other_fields)
 
-    def create_user(self, email, user_name,
+    def create_user(self, email, username,
                     password, **other_fields):
 
         if not email:
@@ -31,7 +28,7 @@ class CustomUserManager(BaseUserManager):
 
         email = self.normalize_email(email)
         user = self.model(email=email,
-                          user_name=user_name,
+                          username=username,
                           **other_fields)
         user.set_password(password)
         user.save()
