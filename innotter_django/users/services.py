@@ -14,11 +14,6 @@ class LoginService:
     def validate(self):
         serialized_user = UserLoginSerializer(data=self.user)
         serialized_user.is_valid(raise_exception=True)
-        # email_error = serialized_user.errors.get('email')[0]
-        # if email_error.code == 'unique':
-        #     pass
-        # else:
-        #     serialized_user.is_valid(raise_exception=True)
 
     def get_user(self):
         email = self.user.get('email')
