@@ -8,37 +8,6 @@ from users.serializers import UserSerializer, UserLoginSerializer
 from users.models import User
 from users.permissions import IsAdmin, IsModerator, IsOwner
 from users.auth import generate_access_token, generate_refresh_token
-# from users.services import LoginService, RefreshTokenService, PayLoadService
-
-
-class LoginService:
-    def __init__(self, request):
-        self.__user = request.data.get('user', {})
-
-    @property
-    def user(self):
-        return self.__user
-
-    def get_user(self):
-        email = self.__user.get('email')
-        user = User.objects.filter(email=email).first()
-        if user is None:
-            raise exceptions.AuthenticationFailed('user not found')
-        return user
-
-    def get_response(self):
-        user = self.get_user()
-        response = Response()
-        response.set_cookie(
-            key='refreshtoken',
-            value=generate_refresh_token(user),
-            httponly=True
-        )
-        response.data = {
-            'access_token': generate_access_token(user),
-            'user': UserSerializer(user).data,
-        }
-        return response
 
 
 class RefreshTokenService:
@@ -66,11 +35,13 @@ class PayLoadService:
             )
 
     def get_user(self):
-        user = User.objects.filter(id=self.__payload.get('user_id')).first()
-        if user is None:
-            raise exceptions.AuthenticationFailed('User not found')
-        if not user.is_active:
-            raise exceptions.AuthenticationFailed('user is inactive')
+        user = User.objects.filter(
+            id=self.__payload.get('user_id')
+        ).first()
+        if user is None or not user.is_active:
+            raise exceptions.AuthenticationFailed(
+                'User not found or not active'
+            )
         return user
 
 
@@ -91,10 +62,23 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def login(self, request):
-        login_service = LoginService(request)
-        serialized_user = UserLoginSerializer(data=login_service.user)
+        user_data = request.data.get('user', {})
+        serialized_user = UserLoginSerializer(data=user_data)
         serialized_user.is_valid(raise_exception=True)
-        response = login_service.get_response()
+        email = user_data.get('email')
+        user = User.objects.filter(email=email).first()
+        if user is None:
+            raise exceptions.AuthenticationFailed('user not found')
+        response = Response()
+        response.set_cookie(
+            key='refreshtoken',
+            value=generate_refresh_token(user),
+            httponly=True
+        )
+        response.data = {
+            'access_token': generate_access_token(user),
+            'user': UserSerializer(user).data,
+        }
         return response
 
     @action(detail=False, methods=['post'])

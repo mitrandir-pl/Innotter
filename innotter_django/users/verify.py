@@ -8,35 +8,42 @@ from users.models import User
 
 class JWTAuthentication(BaseAuthentication):
 
-    def _get_access_token(self, authorization_header):
+    def validate_authorization_header(self, authorization_header):
         try:
             access_token = authorization_header.split(' ')[1]
-            return access_token
-        except IndexError:
-            raise exceptions.AuthenticationFailed('Token prefix missing')
-
-    def _get_payload(self, access_token):
-        try:
             payload = jwt.decode(
                 access_token, settings.SECRET_KEY, algorithms=['HS256']
             )
-            return payload
+            user = User.objects.filter(id=payload['user_id']).first()
+            if user is None or not user.is_active:
+                raise exceptions.AuthenticationFailed(
+                    'User not found or not active'
+                )
+        except IndexError:
+            raise exceptions.AuthenticationFailed('Token prefix missing')
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed('access_token expired')
 
+    def _get_access_token(self, authorization_header):
+        access_token = authorization_header.split(' ')[1]
+        return access_token
+
+    def _get_payload(self, access_token):
+        payload = jwt.decode(
+            access_token, settings.SECRET_KEY, algorithms=['HS256']
+        )
+        return payload
+
     def _get_user(self, payload):
         user = User.objects.filter(id=payload['user_id']).first()
-        if user is None:
-            raise exceptions.AuthenticationFailed('User not found')
-        if not user.is_active:
-            raise exceptions.AuthenticationFailed('user is inactive')
         return user
 
     def authenticate(self, request):
-
         authorization_header = request.headers.get('Authorization')
         if not authorization_header:
             return None
+        else:
+            self.validate_authorization_header(authorization_header)
         access_token = self._get_access_token(authorization_header)
         payload = self._get_payload(access_token)
         user = self._get_user(payload)
