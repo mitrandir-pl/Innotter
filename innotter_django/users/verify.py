@@ -14,7 +14,7 @@ class JWTAuthentication(BaseAuthentication):
             payload = jwt.decode(
                 access_token, settings.SECRET_KEY, algorithms=['HS256']
             )
-            user = User.objects.filter(id=payload['user_id']).first()
+            user = User.objects.filter(email=payload['user_email']).first()
             if user is None or not user.is_active:
                 raise exceptions.AuthenticationFailed(
                     'User not found or not active'
@@ -35,7 +35,7 @@ class JWTAuthentication(BaseAuthentication):
         return payload
 
     def _get_user(self, payload):
-        user = User.objects.filter(id=payload['user_id']).first()
+        user = User.objects.filter(email=payload['user_email']).first()
         return user
 
     def authenticate(self, request):

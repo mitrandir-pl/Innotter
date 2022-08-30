@@ -1,6 +1,6 @@
 import jwt
 from django.conf import settings
-from rest_framework import viewsets, exceptions
+from rest_framework import viewsets, exceptions, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -12,7 +12,7 @@ from users.auth import generate_access_token, generate_refresh_token
 
 class RefreshTokenService:
     def __init__(self, request):
-        self.__token = request.COOKIES.get('refreshtoken')
+        self.__token = request.data.get('refreshtoken')
         if self.__token is None:
             raise exceptions.AuthenticationFailed(
                 'Authentication credentials were not provided.'
@@ -22,12 +22,10 @@ class RefreshTokenService:
     def token(self):
         return self.__token
 
-
-class PayLoadService:
-    def __init__(self, refresh_token):
+    def validate_token(self):
         try:
             self.__payload = jwt.decode(
-                refresh_token, settings.SECRET_KEY, algorithms=['HS256']
+                self.__token, settings.SECRET_KEY, algorithms=['HS256']
             )
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed(
@@ -35,14 +33,7 @@ class PayLoadService:
             )
 
     def get_user(self):
-        user = User.objects.filter(
-            id=self.__payload.get('user_id')
-        ).first()
-        if user is None or not user.is_active:
-            raise exceptions.AuthenticationFailed(
-                'User not found or not active'
-            )
-        return user
+        return {'email': self.__payload.get('user_email')}
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -64,27 +55,19 @@ class UserViewSet(viewsets.ModelViewSet):
     def login(self, request):
         user_data = request.data.get('user', {})
         serialized_user = UserLoginSerializer(data=user_data)
-        serialized_user.is_valid(raise_exception=True)
-        email = user_data.get('email')
-        user = User.objects.filter(email=email).first()
-        if user is None:
-            raise exceptions.AuthenticationFailed('user not found')
-        response = Response()
-        response.set_cookie(
-            key='refreshtoken',
-            value=generate_refresh_token(user),
-            httponly=True
-        )
-        response.data = {
-            'access_token': generate_access_token(user),
-            'user': UserSerializer(user).data,
-        }
-        return response
+        if serialized_user.is_valid(raise_exception=True):
+            return Response({
+                'refresh_token': generate_refresh_token(serialized_user.data),
+                'access_token': generate_access_token(serialized_user.data),
+                'user': serialized_user.data,
+            }, status=status.HTTP_200_OK)
+        return Response(serialized_user.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
     def refresh_token(self, request):
         refresh_token_service = RefreshTokenService(request)
-        payload_service = PayLoadService(refresh_token_service.token)
-        user = payload_service.get_user()
+        refresh_token_service.validate_token()
+        user = refresh_token_service.get_user()
         access_token = generate_access_token(user)
         return Response({'access_token': access_token})
