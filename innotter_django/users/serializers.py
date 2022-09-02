@@ -1,6 +1,7 @@
 from enum import unique
 
 from rest_framework import serializers
+from users.auth import generate_refresh_token, generate_access_token
 from users.models import User
 
 
@@ -30,12 +31,20 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserLoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
+    refresh_token = serializers.CharField(read_only=True)
+    access_token = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
         fields = (
             'id', 'email', 'password',
+            'refresh_token', 'access_token',
         )
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
         }
+
+    def validate(self, data):
+        data['refresh_token'] = generate_refresh_token(data)
+        data['access_token'] = generate_access_token(data)
+        return data

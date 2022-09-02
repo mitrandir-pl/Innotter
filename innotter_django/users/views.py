@@ -12,7 +12,7 @@ from users.auth import generate_access_token, generate_refresh_token
 
 class RefreshTokenService:
     def __init__(self, request):
-        self.__token = request.data.get('refreshtoken')
+        self.__token = request.data.get('refresh_token')
         if self.__token is None:
             raise exceptions.AuthenticationFailed(
                 'Authentication credentials were not provided.'
@@ -56,11 +56,8 @@ class UserViewSet(viewsets.ModelViewSet):
         user_data = request.data.get('user', {})
         serialized_user = UserLoginSerializer(data=user_data)
         if serialized_user.is_valid(raise_exception=True):
-            return Response({
-                'refresh_token': generate_refresh_token(serialized_user.data),
-                'access_token': generate_access_token(serialized_user.data),
-                'user': serialized_user.data,
-            }, status=status.HTTP_200_OK)
+            return Response(serialized_user.data,
+                            status=status.HTTP_200_OK)
         return Response(serialized_user.errors,
                         status=status.HTTP_400_BAD_REQUEST)
 
