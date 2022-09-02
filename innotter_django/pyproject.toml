@@ -11,6 +11,7 @@ djangorestframework = "^3.13.1"
 psycopg2-binary = "^2.9.3"
 django-dotenv = "^1.4.2"
 drf-yasg = "^1.21.3"
+PyJWT = "^2.4.0"
 
 [tool.poetry.dev-dependencies]
 
