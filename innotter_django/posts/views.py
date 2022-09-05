@@ -2,8 +2,8 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from posts.serializers import PostSerializer
 from posts.models import Post
-from posts.permissions import IsAdmin, IsModerator, IsOwner
-
+from pages.permissions import IsOwner
+from users.permissions import IsAdmin, IsModerator
 
 class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer

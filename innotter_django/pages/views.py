@@ -2,7 +2,8 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from pages.serializers import PageSerializer, TagSerializer
 from pages.models import Page, Tag
-from pages.permissions import IsAdmin, IsModerator, IsOwner, IsNotPrivate
+from pages.permissions import IsOwner, IsNotPrivate
+from users.permissions import IsAdmin, IsModerator
 
 
 class PageViewSet(viewsets.ModelViewSet):
