@@ -2,12 +2,13 @@ import jwt
 from django.conf import settings
 from rest_framework import viewsets, exceptions, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from users.serializers import UserSerializer, UserLoginSerializer
 from users.models import User
 from users.permissions import IsAdmin, IsModerator, IsOwner
 from users.auth import generate_access_token, generate_refresh_token
+from users.services import AdminService
 
 
 class RefreshTokenService:
@@ -42,9 +43,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         permissions = {
-            'update': [IsAdmin | IsModerator | IsOwner],
-            'partial_update': [IsAdmin | IsModerator | IsOwner],
-            'destroy': [IsAdmin | IsModerator | IsOwner],
+            'update': [IsAuthenticated, IsAdmin | IsModerator | IsOwner],
+            'partial_update': [IsAuthenticated, IsAdmin | IsModerator | IsOwner],
+            'destroy': [IsAuthenticated, IsAdmin | IsModerator | IsOwner],
+            'block_user': [IsAuthenticated, IsAdmin],
         }
         permissions_for_action = permissions.get(
             self.action, [AllowAny]
@@ -68,3 +70,12 @@ class UserViewSet(viewsets.ModelViewSet):
         user = refresh_token_service.get_user()
         access_token = generate_access_token(user)
         return Response({'access_token': access_token})
+
+    @action(detail=True, methods=['post'])
+    def block_user(self, request, pk):
+        admin_service = AdminService()
+        blocked_user = admin_service.block_user(pk=pk)
+        if blocked_user:
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
