@@ -12,6 +12,8 @@ psycopg2-binary = "^2.9.3"
 django-dotenv = "^1.4.2"
 drf-yasg = "^1.21.3"
 PyJWT = "^2.4.0"
+pytest-django = "^4.5.2"
+coverage = "^6.4.4"
 
 [tool.poetry.dev-dependencies]
 

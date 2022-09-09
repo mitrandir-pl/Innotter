@@ -19,10 +19,6 @@ class RefreshTokenService:
                 'Authentication credentials were not provided.'
             )
 
-    @property
-    def token(self):
-        return self.__token
-
     def validate_token(self):
         try:
             self.__payload = jwt.decode(
@@ -57,11 +53,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def login(self, request):
         user_data = request.data.get('user', {})
         serialized_user = UserLoginSerializer(data=user_data)
-        if serialized_user.is_valid(raise_exception=True):
-            return Response(serialized_user.data,
-                            status=status.HTTP_200_OK)
-        return Response(serialized_user.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
+        serialized_user.is_valid(raise_exception=True)
+        return Response(serialized_user.data,
+                        status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
     def refresh_token(self, request):

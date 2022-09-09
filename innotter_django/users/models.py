@@ -7,8 +7,8 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, username,
                          password, **other_fields):
 
-        map(lambda field: other_fields.setdefault(field, True),
-            ('is_staff', 'is_superuser', 'is_active'))
+        for field in ('is_staff', 'is_superuser', 'is_active'):
+            other_fields.setdefault(field, True)
 
         permissions = ('is_staff', 'is_superuser')
         for permission in permissions:

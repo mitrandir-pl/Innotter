@@ -34,9 +34,6 @@ class ModeratorService(BaseService):
 class AdminService(ModeratorService):
     def block_user(self, user_pk):
         user = self.get_user_by_id(user_pk)
-        if user:
-            user.is_blocked = True
-            user.save()
-            return user
-        else:
-            return None
+        user.is_blocked = True
+        user.save()
+        return user
