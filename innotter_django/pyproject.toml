@@ -14,6 +14,7 @@ drf-yasg = "^1.21.3"
 PyJWT = "^2.4.0"
 pytest-django = "^4.5.2"
 coverage = "^6.4.4"
+pytest-factoryboy = "^2.5.0"
 
 [tool.poetry.dev-dependencies]
 

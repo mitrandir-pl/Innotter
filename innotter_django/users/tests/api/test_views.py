@@ -3,14 +3,14 @@ from rest_framework import status
 from django.urls import reverse
 
 
+@pytest.mark.django_db
 class TestUserAPI:
 
-    @pytest.mark.django_db
-    def test_successful_login(self, client, user):
+    def test_successful_login(self, client, user, user_password):
         url = reverse('users-login')
         data = {'user': {
             'email': user.email,
-            'password': '123',
+            'password': user_password,
         }}
         response = client.post(url, data, format="json")
         assert response.status_code == status.HTTP_200_OK
@@ -18,7 +18,6 @@ class TestUserAPI:
         assert response.data['refresh_token'] and \
                response.data['access_token']
 
-    @pytest.mark.django_db
     def test_unsuccessful_login(self, client):
         url = reverse('users-login')
         data = {'user': {
@@ -28,7 +27,6 @@ class TestUserAPI:
         response = client.post(url, data, format="json")
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    @pytest.mark.django_db
     def test_refresh_token(self, client, refresh_token):
         url = reverse('users-refresh-token')
         data = {'refresh_token': refresh_token}
@@ -36,7 +34,6 @@ class TestUserAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.json()['access_token']
 
-    @pytest.mark.django_db
     def test_block_user(self, client, admin_access_token):
         blocked_user_url = reverse('users-detail', kwargs={'pk': 1})
         user_before_block = client.get(blocked_user_url)

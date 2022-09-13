@@ -49,10 +49,13 @@ class UserLoginSerializer(serializers.ModelSerializer):
                 'User not found or not active'
             )
         if user.check_password(data['password']):
-            data['refresh_token'] = generate_refresh_token(data)
-            data['access_token'] = generate_access_token(data)
+            self.add_tokens(data)
             return data
         else:
             raise exceptions.AuthenticationFailed(
                 'Wrong password'
             )
+
+    def add_tokens(self, data):
+        data['refresh_token'] = generate_refresh_token(data)
+        data['access_token'] = generate_access_token(data)

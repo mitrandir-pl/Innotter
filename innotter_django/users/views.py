@@ -68,7 +68,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def block_user(self, request, pk):
         admin_service = AdminService()
-        blocked_user = admin_service.block_user(pk=pk)
+        blocked_user = admin_service.block_user(user_pk=pk)
         if blocked_user:
             return Response(status=status.HTTP_200_OK)
         else:

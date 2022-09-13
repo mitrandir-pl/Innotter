@@ -1,26 +1,31 @@
-from dataclasses import dataclass
 import pytest
+import factory
+from pytest_factoryboy import register
 from django.urls import reverse
+from django.contrib.auth.hashers import make_password
 from rest_framework.test import APIClient
 from users.models import User
 
 
-@dataclass
-class TestUser:
-    username: str = 'test_user'
-    email: str = 'a@a.com'
-    role: str = 'user'
-    title: str = 'test'
-    password: str = '123'
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = User
+
+    email = factory.Faker('email')
+    username = factory.Faker('first_name')
+    title = factory.Faker('name')
+    password = factory.PostGenerationMethodCall('set_password', 'password')
+    role = 'user'
+    is_blocked = False
 
 
-@dataclass
-class TestAdmin:
-    username: str = 'test_admin'
-    email: str = 'admin@a.com'
-    role: str = 'admin'
-    title: str = 'test'
-    password: str = '123'
+@pytest.fixture
+def user_password():
+    return 'password'
+
+
+register(UserFactory)
+register(UserFactory, 'admin', role='admin')
 
 
 @pytest.fixture
@@ -29,60 +34,32 @@ def client():
 
 
 @pytest.fixture
-def user():
-    user = TestUser()
-    return User.objects.create_user(
-        username=user.username,
-        email=user.email,
-        role=user.role,
-        title=user.title,
-        password=user.password,
-    )
-
-
-@pytest.fixture
-def admin():
-    admin = TestAdmin()
-    return User.objects.create_superuser(
-        username=admin.username,
-        email=admin.email,
-        role=admin.role,
-        title=admin.title,
-        password=admin.password,
-    )
-
-
-@pytest.fixture
 def user_for_serializer():
-    user = TestUser()
     return {
-        'username': user.username,
-        'email': user.email,
-        'role': user.role,
-        'title': user.title,
-        'password': user.password,
+        'username': 'username',
+        'email': 'email@a.com',
+        'role': 'user',
+        'title': 'title',
+        'password': 'password',
     }
 
 
 @pytest.fixture
-def refresh_token(client, user):
-    user = TestUser()
-    url = reverse('users-login')
-    data = {'user': {
-        'email': user.email,
-        'password': user.password,
-    }}
-    response = client.post(url, data, format='json')
+def refresh_token(client, user, user_password):
+    response = login(client, user.email, user_password)
     return response.json()['refresh_token']
 
 
 @pytest.fixture
-def admin_access_token(client, admin):
-    admin = TestAdmin()
+def admin_access_token(client, admin, user_password):
+    response = login(client, admin.email, user_password)
+    return response.json()['access_token']
+
+
+def login(client, email, password):
     url = reverse('users-login')
     data = {'user': {
-        'email': admin.email,
-        'password': admin.password,
+        'email': email,
+        'password': password,
     }}
-    response = client.post(url, data, format='json')
-    return response.json()['access_token']
+    return client.post(url, data, format='json')
