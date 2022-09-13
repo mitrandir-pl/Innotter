@@ -9,6 +9,8 @@ from users.models import User
 from users.permissions import IsAdmin, IsModerator, IsOwner
 from users.auth import generate_access_token, generate_refresh_token
 from users.services import AdminService
+from core.error_messages import (AUTHENTICATION_FAILED_MESSAGE,
+                                 REFRESH_TOKEN_EXPIRED_MESSAGE)
 
 
 class RefreshTokenService:
@@ -16,7 +18,7 @@ class RefreshTokenService:
         self.__token = request.data.get('refresh_token')
         if self.__token is None:
             raise exceptions.AuthenticationFailed(
-                'Authentication credentials were not provided.'
+                AUTHENTICATION_FAILED_MESSAGE
             )
 
     def validate_token(self):
@@ -26,7 +28,7 @@ class RefreshTokenService:
             )
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed(
-                'expired refresh token, please login again.'
+                REFRESH_TOKEN_EXPIRED_MESSAGE
             )
 
     def get_user(self):
@@ -68,8 +70,5 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def block_user(self, request, pk):
         admin_service = AdminService()
-        blocked_user = admin_service.block_user(user_pk=pk)
-        if blocked_user:
-            return Response(status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        admin_service.block_user(user_pk=pk)
+        return Response(status=status.HTTP_200_OK)

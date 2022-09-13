@@ -2,6 +2,9 @@ from rest_framework import serializers, exceptions
 from users.auth import generate_refresh_token, generate_access_token
 from users.models import User
 
+from core.error_messages import (NO_SUCH_USER_OR_USER_NOT_ACTIVE_MESSAGE,
+                                 WRONG_PASSWORD_MESSAGE)
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,16 +49,16 @@ class UserLoginSerializer(serializers.ModelSerializer):
         user = User.objects.filter(email=data['email']).first()
         if user is None or not user.is_active:
             raise exceptions.AuthenticationFailed(
-                'User not found or not active'
+                NO_SUCH_USER_OR_USER_NOT_ACTIVE_MESSAGE
             )
         if user.check_password(data['password']):
-            self.add_tokens(data)
-            return data
+            tokens = self.get_tokens(data)
+            return data | tokens
         else:
             raise exceptions.AuthenticationFailed(
-                'Wrong password'
+                WRONG_PASSWORD_MESSAGE
             )
 
-    def add_tokens(self, data):
-        data['refresh_token'] = generate_refresh_token(data)
-        data['access_token'] = generate_access_token(data)
+    def get_tokens(self, data):
+        return {'refresh_token': generate_refresh_token(data),
+                'access_token': generate_access_token(data)}

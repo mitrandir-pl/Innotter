@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
+from core.error_messages import EMAIL_REQUIRED_MESSAGE
+
 
 class CustomUserManager(BaseUserManager):
 
@@ -24,7 +26,7 @@ class CustomUserManager(BaseUserManager):
                     password, **other_fields):
 
         if not email:
-            raise ValueError('You must provide an email address')
+            raise ValueError(EMAIL_REQUIRED_MESSAGE)
 
         email = self.normalize_email(email)
         user = self.model(email=email,

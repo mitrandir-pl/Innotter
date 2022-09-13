@@ -3,6 +3,9 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework import exceptions
 from django.conf import settings
 from users.models import User
+from core.error_messages import (NO_SUCH_USER_OR_USER_NOT_ACTIVE_MESSAGE,
+                                 TOKEN_PREFIX_ERROR_MESSAGE,
+                                 ACCESS_TOKEN_EXPIRED_MESSAGE,)
 
 
 class JWTAuthentication(BaseAuthentication):
@@ -16,12 +19,12 @@ class JWTAuthentication(BaseAuthentication):
             user = User.objects.filter(email=payload['user_email']).first()
             if user is None or not user.is_active:
                 raise exceptions.AuthenticationFailed(
-                    'User not found or not active'
+                    NO_SUCH_USER_OR_USER_NOT_ACTIVE_MESSAGE
                 )
         except IndexError:
-            raise exceptions.AuthenticationFailed('Token prefix missing')
+            raise exceptions.AuthenticationFailed(TOKEN_PREFIX_ERROR_MESSAGE)
         except jwt.ExpiredSignatureError:
-            raise exceptions.AuthenticationFailed('access_token expired')
+            raise exceptions.AuthenticationFailed(ACCESS_TOKEN_EXPIRED_MESSAGE)
 
     def _get_access_token(self, authorization_header):
         access_token = authorization_header.split(' ')[1]
