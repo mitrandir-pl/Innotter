@@ -8,12 +8,7 @@ from core.error_messages import WRONG_DATE_MESSAGE
 
 class ModeratorService:
     def block_page(self, data: dict[str: str], user_pk: int):
-        date = data.get('unblock_date', '')
-        try:
-            unblock_date_list = list(map(lambda x: int(x), date.split()))
-            unblock_date = datetime(*unblock_date_list)
-        except TypeError:
-            raise exceptions.ValidationError(WRONG_DATE_MESSAGE)
+        unblock_date = self.get_date(data)
         page = Page.objects.get(pk=user_pk)
         page.unblock_date = unblock_date
         data = PageSimpleSerializer(page).data
@@ -21,6 +16,15 @@ class ModeratorService:
         if serialized_page.is_valid(raise_exception=True):
             serialized_page.save()
             return serialized_page
+
+    def get_date(self, data: dict[str: str]):
+        date = data.get('unblock_date', '')
+        try:
+            unblock_date_list = list(map(lambda x: int(x), date.split()))
+            unblock_date = datetime(*unblock_date_list)
+            return unblock_date
+        except TypeError:
+            raise exceptions.ValidationError(WRONG_DATE_MESSAGE)
 
 
 class AdminService(ModeratorService):

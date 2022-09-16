@@ -1,4 +1,5 @@
 import pytest
+from faker import Faker
 from pytest_factoryboy import register
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -21,12 +22,13 @@ def client():
 
 @pytest.fixture
 def user_for_serializer():
+    faker = Faker()
     return {
-        'username': 'username',
-        'email': 'email@a.com',
+        'username': faker.first_name(),
+        'email': faker.email(),
         'role': 'user',
-        'title': 'title',
-        'password': 'password',
+        'title': faker.name(),
+        'password': faker.password(),
     }
 
 
@@ -54,5 +56,4 @@ def login(client, email, password):
         'email': email,
         'password': password,
     }}
-    breakpoint()
     return client.post(url, data, format='json')
