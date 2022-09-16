@@ -7,7 +7,12 @@ from core.error_messages import WRONG_DATE_MESSAGE
 
 
 class ModeratorService:
-    def block_page(self, data: dict[str: str], user_pk: int):
+    """
+    Method gets page by pk, set an unblock_date.
+    Check if date is valid with the serializer, and if it's okay,
+    returns serialized page.
+    """
+    def block_page(self, data: dict[str: str], user_pk: int) -> PageSimpleSerializer:
         unblock_date = self.get_date(data)
         page = Page.objects.get(pk=user_pk)
         page.unblock_date = unblock_date
@@ -17,7 +22,11 @@ class ModeratorService:
             serialized_page.save()
             return serialized_page
 
-    def get_date(self, data: dict[str: str]):
+    def get_date(self, data: dict[str: str]) -> datetime:
+        """
+        Method takes a dict, get value "unblock_date" from it
+        and returns it in datetime format.
+        """
         date = data.get('unblock_date', '')
         try:
             unblock_date_list = list(map(lambda x: int(x), date.split()))

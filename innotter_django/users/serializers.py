@@ -52,8 +52,8 @@ class UserLoginSerializer(serializers.ModelSerializer):
                 NO_SUCH_USER_OR_USER_NOT_ACTIVE_MESSAGE
             )
         if user.check_password(data['password']):
-            return data | {'refresh_token': generate_refresh_token(data),
-                           'access_token': generate_access_token(data)}
+            return dict({'refresh_token': generate_refresh_token(data),
+                         'access_token': generate_access_token(data)}, **data)
         else:
             raise exceptions.AuthenticationFailed(
                 WRONG_PASSWORD_MESSAGE
