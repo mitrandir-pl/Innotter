@@ -14,10 +14,13 @@ class PageViewSet(viewsets.ModelViewSet):
     queryset = Page.objects.all()
 
     def get_serializer_class(self):
-        if self.action == 'create':
-            return PageSimpleSerializer
-        else:
-            return PageSerializer
+        serializer_classes = {
+            'create': PageSimpleSerializer,
+        }
+        serializer_class_for_action = serializer_classes.get(
+            self.action, PageSerializer
+        )
+        return serializer_class_for_action
 
     def get_permissions(self):
         permissions = {
