@@ -1,14 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
+from core.error_messages import EMAIL_REQUIRED_MESSAGE
+
 
 class CustomUserManager(BaseUserManager):
 
     def create_superuser(self, email, username,
                          password, **other_fields):
 
-        map(lambda field: other_fields.setdefault(field, True),
-            ('is_staff', 'is_superuser', 'is_active'))
+        for field in ('is_staff', 'is_superuser', 'is_active'):
+            other_fields.setdefault(field, True)
 
         permissions = ('is_staff', 'is_superuser')
         for permission in permissions:
@@ -24,7 +26,7 @@ class CustomUserManager(BaseUserManager):
                     password, **other_fields):
 
         if not email:
-            raise ValueError('You must provide an email address')
+            raise ValueError(EMAIL_REQUIRED_MESSAGE)
 
         email = self.normalize_email(email)
         user = self.model(email=email,

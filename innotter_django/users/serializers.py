@@ -1,8 +1,9 @@
-from enum import unique
-
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from users.auth import generate_refresh_token, generate_access_token
 from users.models import User
+
+from core.error_messages import (NO_SUCH_USER_OR_USER_NOT_ACTIVE_MESSAGE,
+                                 WRONG_PASSWORD_MESSAGE)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -45,6 +46,15 @@ class UserLoginSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        data['refresh_token'] = generate_refresh_token(data)
-        data['access_token'] = generate_access_token(data)
-        return data
+        user = User.objects.filter(email=data['email']).first()
+        if user is None or not user.is_active:
+            raise exceptions.AuthenticationFailed(
+                NO_SUCH_USER_OR_USER_NOT_ACTIVE_MESSAGE
+            )
+        if user.check_password(data['password']):
+            return dict({'refresh_token': generate_refresh_token(data),
+                         'access_token': generate_access_token(data)}, **data)
+        else:
+            raise exceptions.AuthenticationFailed(
+                WRONG_PASSWORD_MESSAGE
+            )

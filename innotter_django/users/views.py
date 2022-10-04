@@ -2,12 +2,15 @@ import jwt
 from django.conf import settings
 from rest_framework import viewsets, exceptions, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from users.serializers import UserSerializer, UserLoginSerializer
 from users.models import User
 from users.permissions import IsAdmin, IsModerator, IsOwner
 from users.auth import generate_access_token, generate_refresh_token
+from users.services import AdminService
+from core.error_messages import (AUTHENTICATION_FAILED_MESSAGE,
+                                 REFRESH_TOKEN_EXPIRED_MESSAGE)
 
 
 class RefreshTokenService:
@@ -15,12 +18,8 @@ class RefreshTokenService:
         self.__token = request.data.get('refresh_token')
         if self.__token is None:
             raise exceptions.AuthenticationFailed(
-                'Authentication credentials were not provided.'
+                AUTHENTICATION_FAILED_MESSAGE
             )
-
-    @property
-    def token(self):
-        return self.__token
 
     def validate_token(self):
         try:
@@ -29,7 +28,7 @@ class RefreshTokenService:
             )
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed(
-                'expired refresh token, please login again.'
+                REFRESH_TOKEN_EXPIRED_MESSAGE
             )
 
     def get_user(self):
@@ -42,9 +41,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         permissions = {
-            'update': [IsAdmin | IsModerator | IsOwner],
-            'partial_update': [IsAdmin | IsModerator | IsOwner],
-            'destroy': [IsAdmin | IsModerator | IsOwner],
+            'update': [IsAuthenticated, IsAdmin | IsModerator | IsOwner],
+            'partial_update': [IsAuthenticated, IsAdmin | IsModerator | IsOwner],
+            'destroy': [IsAuthenticated, IsAdmin | IsModerator | IsOwner],
+            'block_user': [IsAuthenticated, IsAdmin],
         }
         permissions_for_action = permissions.get(
             self.action, [AllowAny]
@@ -55,11 +55,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def login(self, request):
         user_data = request.data.get('user', {})
         serialized_user = UserLoginSerializer(data=user_data)
-        if serialized_user.is_valid(raise_exception=True):
-            return Response(serialized_user.data,
-                            status=status.HTTP_200_OK)
-        return Response(serialized_user.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
+        serialized_user.is_valid(raise_exception=True)
+        return Response(serialized_user.data,
+                        status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
     def refresh_token(self, request):
@@ -68,3 +66,9 @@ class UserViewSet(viewsets.ModelViewSet):
         user = refresh_token_service.get_user()
         access_token = generate_access_token(user)
         return Response({'access_token': access_token})
+
+    @action(detail=True, methods=['post'])
+    def block_user(self, request, pk):
+        admin_service = AdminService()
+        admin_service.block_user(user_pk=pk)
+        return Response(status=status.HTTP_200_OK)
