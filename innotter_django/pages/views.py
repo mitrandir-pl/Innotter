@@ -17,10 +17,7 @@ class PageViewSet(viewsets.ModelViewSet):
         serializer_classes = {
             'create': PageSimpleSerializer,
         }
-        serializer_class_for_action = serializer_classes.get(
-            self.action, PageSerializer
-        )
-        return serializer_class_for_action
+        return serializer_classes.get(self.action, PageSerializer)
 
     def get_permissions(self):
         permissions = {
