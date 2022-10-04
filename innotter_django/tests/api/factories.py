@@ -1,6 +1,7 @@
 import factory
 from pages.models import Page
 from users.models import User
+from posts.models import Post
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -25,3 +26,13 @@ class PageFactory(factory.django.DjangoModelFactory):
     image = factory.Faker('image_url')
     owner = factory.SubFactory(UserFactory)
     is_private = False
+
+
+class PostFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Post
+
+    page = factory.SubFactory(PageFactory)
+    content = factory.Faker('text')
+    created_at = factory.Faker('past_datetime')
+    updated_at = factory.Faker('date_time')

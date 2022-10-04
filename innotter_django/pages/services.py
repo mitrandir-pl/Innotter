@@ -38,7 +38,7 @@ class PageService:
         page.followers.add(follower)
         page.follow_requests.remove(follower)
 
-    def allow_all_follow_request(self, page_pk) -> None:
+    def allow_all_follow_request(self, page_pk: int) -> None:
         """
         Method removes all users from follow requests to followers
         """

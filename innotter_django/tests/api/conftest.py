@@ -4,13 +4,15 @@ from faker import Faker
 from pytest_factoryboy import register
 from django.urls import reverse
 from rest_framework.test import APIClient
-from tests.api.factories import PageFactory, UserFactory
+from tests.api.factories import PageFactory, UserFactory, PostFactory
 
 
 register(UserFactory)
 register(UserFactory, 'admin', role='admin')
 register(PageFactory, 'private_page', is_private=True)
 register(PageFactory, 'not_private_page')
+register(PageFactory)
+register(PostFactory)
 
 
 @pytest.fixture
