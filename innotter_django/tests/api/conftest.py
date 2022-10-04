@@ -1,13 +1,18 @@
 import pytest
+from datetime import datetime, timedelta
 from faker import Faker
 from pytest_factoryboy import register
 from django.urls import reverse
 from rest_framework.test import APIClient
-from users.tests.api.factories import UserFactory
+from tests.api.factories import PageFactory, UserFactory, PostFactory
 
 
 register(UserFactory)
 register(UserFactory, 'admin', role='admin')
+register(PageFactory, 'private_page', is_private=True)
+register(PageFactory, 'not_private_page')
+register(PageFactory)
+register(PostFactory)
 
 
 @pytest.fixture
@@ -57,3 +62,23 @@ def login(client, email, password):
         'password': password,
     }}
     return client.post(url, data, format='json')
+
+
+@pytest.fixture
+def page_for_serializer(user):
+    faker = Faker()
+    return {
+        'name': faker.name(),
+        'uuid': faker.ean(),
+        'description': faker.text(),
+        'image': faker.image_url(),
+        'owner': user.id,
+        'is_private': False,
+    }
+
+
+@pytest.fixture
+def unblock_date():
+    unblock_date = datetime.now() + timedelta(days=1)
+    unblock_date = str(unblock_date.replace(microsecond=0))
+    return {'unblock_date': unblock_date}
