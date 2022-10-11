@@ -6,6 +6,12 @@ from rest_framework import status
 @pytest.mark.django_db
 class TestPostAPI:
 
+    def test_create(self, client, access_token, post_for_serializer):
+        url = reverse('posts-list')
+        response = client.post(url, post_for_serializer,
+                               HTTP_AUTHORIZATION=f'token {access_token}')
+        assert response.status_code == status.HTTP_201_CREATED
+
     def test_set_like(self, client, user, post, access_token):
         client.post(reverse('posts-set-like', kwargs={'pk': 1}),
                     HTTP_AUTHORIZATION=f'token {access_token}')

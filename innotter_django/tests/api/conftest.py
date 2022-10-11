@@ -6,7 +6,6 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from tests.api.factories import PageFactory, UserFactory, PostFactory
 
-
 register(UserFactory)
 register(UserFactory, 'admin', role='admin')
 register(PageFactory, 'private_page', is_private=True)
@@ -74,6 +73,17 @@ def page_for_serializer(user):
         'image': faker.image_url(),
         'owner': user.id,
         'is_private': False,
+    }
+
+
+@pytest.fixture
+def post_for_serializer(user, not_private_page):
+    faker = Faker()
+    return {
+        'page': not_private_page.id,
+        'content': faker.text(),
+        'created_at': faker.past_datetime,
+        'updated_at': faker.date_time,
     }
 
 

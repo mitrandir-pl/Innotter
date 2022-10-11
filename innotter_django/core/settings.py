@@ -62,6 +62,8 @@ REST_FRAMEWORK = {
     )
 }
 
+CELERY_BROKER_URL = 'amqp://localhost'
+
 ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [

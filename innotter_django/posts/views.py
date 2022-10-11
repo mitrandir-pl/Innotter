@@ -1,8 +1,10 @@
+from django.urls import reverse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from posts.serializers import PostSerializer
 from posts.models import Post
+from posts.tasks import send_notifications
 from pages.permissions import IsOwner
 from rest_framework.response import Response
 from users.permissions import IsAdmin, IsModerator
@@ -16,7 +18,7 @@ class PostViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         permissions = {
             'retrieve': [IsAuthenticated],
-            'list': [IsAdmin, IsModerator],
+            'list': [IsAdmin | IsModerator],
             'create': [IsAuthenticated],
             'update': [IsOwner],
             'partial_update': [IsOwner],
@@ -27,6 +29,16 @@ class PostViewSet(viewsets.ModelViewSet):
             self.action, [IsAuthenticated]
         )
         return [permission() for permission in permissions_for_action]
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        post_creator_name = request.user.username
+        page_id = request.data.get('page')
+        post_link = request.build_absolute_uri(reverse(
+            'posts-detail', kwargs={'pk': response.data.get('id')}
+        ))
+        send_notifications.delay(post_creator_name, page_id, post_link)
+        return response
 
     @action(detail=True, methods=['post'])
     def set_like(self, request, pk):
