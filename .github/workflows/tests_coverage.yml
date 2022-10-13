@@ -1,0 +1,30 @@
+name: Python Coverage
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          architecture: 'x64'
+      - name: Install dependencies
+        run: |
+          python python -m pip install --upgrade pip
+          pip install coverage pytest
+      - name: Check test coverage
+        run: |
+          poetry run coverage run -m pytest
+          poetry run coverage report
+          poetry run coverage html
