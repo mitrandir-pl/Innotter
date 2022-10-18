@@ -20,10 +20,13 @@ jobs:
           python-version: '3.x'
           architecture: 'x64'
       - name: Install dependencies
+        working-directory: ./app
         run: |
           python -m pip install --upgrade pip
-          pip install coverage pytest
+          pip install poetry
+          poetry install
       - name: Check test coverage
+        working-directory: ./app
         run: |
           poetry run coverage run -m pytest
           poetry run coverage report
