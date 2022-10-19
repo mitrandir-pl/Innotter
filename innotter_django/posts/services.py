@@ -1,47 +1,48 @@
 import boto3
 from pages.models import Page
+from core.settings import (EMAIL_ADDRESS, EMAIL_ADDRESS, AWS_SES_REGION_NAME,
+                           AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ses)
 
 
 class EmailService:
-
     ENDPOINT_URL = 'http://localhost:4566/'
-    EMAIL_SENDER = 'Innotter@gmail.com'
     CHARSET = 'UTF-8'
 
-    def send_notifications_about_new_post(self, post_creator_name: str,
-                                          page_id: int, post_link: str):
-        ses = boto3.client('ses', endpoint_url=self.ENDPOINT_URL)
+    def __init__(self):
+        self.ses = ses
+
+    def send_notifications_about_new_post(self, page_id: int) -> None:
         destination = self.get_destination(page_id)
-        message = self.get_message(post_creator_name, post_link)
-        ses.send_email(
+        message = self.get_message()
+        self.ses.send_email(
             Destination=destination,
             Message=message,
-            Source=self.EMAIL_SENDER
+            Source=EMAIL_ADDRESS
         )
 
-    def get_message(self, post_creator_name: str, post_link: str):
+    def get_message(self) -> dict[str: dict[str: dict[str: str]]]:
         return {
-                    'Body': {
-                        'Html': {
-                            'Data': self.get_html_data(post_creator_name, post_link),
-                            'Charset': self.CHARSET,
-                        },
-                    },
-                    'Subject': {
-                        'Data': 'New Post!!!',
-                        'Charset': self.CHARSET,
-                    }
+            'Body': {
+                'Html': {
+                    'Data': self.get_html_data(),
+                    'Charset': self.CHARSET,
+                },
+            },
+            'Subject': {
+                'Data': 'New Post!!!',
+                'Charset': self.CHARSET,
+            }
         }
 
-    def get_html_data(self, post_creator_name: str, post_link: str):
+    def get_html_data(self) -> str:
         return f"""<html>
             <head></head>
-            <h2>Check out {post_creator_name} new post</h2>
-            <a href="{post_link}">New post!</a>
+            <h2>Check out your friend's new post</h2>
+            <h1>New post!<h1>
             </body>
         </html>"""
 
-    def get_destination(self, page_id: int):
+    def get_destination(self, page_id: int) -> dict[str: list[str]]:
         page = Page.objects.get(pk=page_id)
         emails = page.followers.all().values_list('email', flat=True)
         return {'ToAddresses': [i for i in emails]}

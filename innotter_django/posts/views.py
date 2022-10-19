@@ -30,16 +30,6 @@ class PostViewSet(viewsets.ModelViewSet):
         )
         return [permission() for permission in permissions_for_action]
 
-    def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        post_creator_name = request.user.username
-        page_id = request.data.get('page')
-        post_link = request.build_absolute_uri(reverse(
-            'posts-detail', kwargs={'pk': response.data.get('id')}
-        ))
-        send_notifications.delay(post_creator_name, page_id, post_link)
-        return response
-
     @action(detail=True, methods=['post'])
     def set_like(self, request, pk):
         post = Post.objects.get(pk=pk)
