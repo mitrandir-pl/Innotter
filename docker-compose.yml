@@ -3,13 +3,14 @@ version: '3'
 services:
   django:
     build: ./innotter_django
+    entrypoint:
+      - ./django_entrypoint.sh
     volumes:
       - ./innotter_django:/innotter_django
     env_file:
       - ./innotter_django/.env
     ports:
       - "8000:8000"
-    command: sh -c "poetry run python manage.py migrate && poetry run python manage.py runserver 0.0.0.0:8000"
     depends_on:
       - postgres
 
@@ -42,7 +43,8 @@ services:
   celery:
     restart: always
     build: ./innotter_django
-    command: poetry run celery -A core worker -l INFO
+    entrypoint:
+      - ./celery_entrypoint.sh
     volumes:
       - ./innotter_django:/innotter_django
     environment:
