@@ -19,4 +19,4 @@ jobs:
       - name: Pytest
         run: |
           docker exec innotter_django_1 poetry run coverage run -m pytest
-          docker exec innotter_django_1 poetry run coverage report --fail-under=98
+          docker exec innotter_django_1 poetry run coverage report --fail-under=90
