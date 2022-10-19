@@ -17,8 +17,6 @@ jobs:
       - name: Set up docker-compose
         run: docker-compose up -d
       - name: Pytest
-        run: docker exec innotter_django_1 poetry run coverage run -m pytest
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          docker exec innotter_django_1 poetry run coverage run -m pytest
+          docker exec innotter_django_1 poetry run coverage report --fail-under=98
