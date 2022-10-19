@@ -21,11 +21,11 @@ jobs:
           docker exec innotter_django_1 poetry run coverage run -m pytest
           docker exec innotter_django_1 poetry run coverage report --fail-under=90
           docker exec innotter_django_1 poetry run coverage xml
-
+          ls innotter_django
       - name: Report coverage to codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
+          files: innotter_django/coverage.xml
           directory: ./coverage/reports/
           fail_ci_if_error: true
