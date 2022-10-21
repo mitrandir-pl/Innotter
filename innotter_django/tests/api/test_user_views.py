@@ -34,10 +34,10 @@ class TestUserAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.json()['access_token']
 
-    def test_block_user(self, client, admin_access_token):
-        blocked_user_url = reverse('users-detail', kwargs={'pk': 1})
+    def test_block_user(self, client, admin, admin_access_token):
+        blocked_user_url = reverse('users-detail', kwargs={'pk': admin.id})
         user_before_block = client.get(blocked_user_url)
-        url = reverse('users-block-user', kwargs={'pk': 1})
+        url = reverse('users-block-user', kwargs={'pk': admin.id})
         response = client.post(
             url, HTTP_AUTHORIZATION=f'token {admin_access_token}'
         )

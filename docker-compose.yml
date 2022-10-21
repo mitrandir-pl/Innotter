@@ -3,11 +3,14 @@ version: '3'
 services:
   django:
     build: ./innotter_django
+    entrypoint:
+      - ./django_entrypoint.sh
     volumes:
       - ./innotter_django:/innotter_django
+    env_file:
+      - ./innotter_django/.env
     ports:
       - "8000:8000"
-    command: sh -c "poetry run python manage.py migrate && poetry run python manage.py runserver 0.0.0.0:8000"
     depends_on:
       - postgres
 
@@ -29,3 +32,35 @@ services:
       - ./innotter_django/.env
     ports:
       - "5050:80"
+
+  rabbitmq3:
+    container_name: "rabbitmq"
+    image: rabbitmq:3-management-alpine
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  celery:
+    restart: always
+    build: ./innotter_django
+    entrypoint:
+      - ./celery_entrypoint.sh
+    volumes:
+      - ./innotter_django:/innotter_django
+    environment:
+      - CELERY_BROKER=amqp://guest:guest@rabbitmq3:5672/
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq3:5672/
+    env_file:
+      - ./innotter_django/.env
+    links:
+      - localstack
+      - rabbitmq3
+      - django
+
+  localstack:
+    container_name: localstack
+    environment:
+      - LOCALSTACK_HOSTNAME=localstack
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"

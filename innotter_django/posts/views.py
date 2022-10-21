@@ -1,8 +1,10 @@
+from django.urls import reverse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from posts.serializers import PostSerializer
 from posts.models import Post
+from posts.tasks import send_notifications
 from pages.permissions import IsOwner
 from rest_framework.response import Response
 from users.permissions import IsAdmin, IsModerator
@@ -16,7 +18,7 @@ class PostViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         permissions = {
             'retrieve': [IsAuthenticated],
-            'list': [IsAdmin, IsModerator],
+            'list': [IsAdmin | IsModerator],
             'create': [IsAuthenticated],
             'update': [IsOwner],
             'partial_update': [IsOwner],

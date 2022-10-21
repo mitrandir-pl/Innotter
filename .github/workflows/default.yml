@@ -1,0 +1,30 @@
+name: Python Coverage
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up docker-compose
+        run: docker-compose up -d
+      - name: Pytest
+        run: |
+          docker exec innotter_django_1 poetry run coverage run -m pytest
+          docker exec innotter_django_1 poetry run coverage report --fail-under=90
+          docker exec innotter_django_1 poetry run coverage xml
+      - name: Report coverage to codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: innotter_django/coverage.xml
+          directory: ./coverage/reports/
+          fail_ci_if_error: true

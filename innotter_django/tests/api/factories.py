@@ -33,6 +33,6 @@ class PostFactory(factory.django.DjangoModelFactory):
         model = Post
 
     page = factory.SubFactory(PageFactory)
-    content = factory.Faker('text')
+    content = factory.Faker('sentence')
     created_at = factory.Faker('past_datetime')
     updated_at = factory.Faker('date_time')
