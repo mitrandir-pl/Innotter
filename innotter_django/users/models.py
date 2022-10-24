@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 from core.error_messages import EMAIL_REQUIRED_MESSAGE
+from core.storages import PublicMediaStorage
 
 
 class CustomUserManager(BaseUserManager):
@@ -46,7 +47,7 @@ class User(AbstractUser):
     objects = CustomUserManager()
 
     email = models.EmailField(unique=True)
-    image_s3_path = models.CharField(max_length=200, null=True, blank=True)
+    image_s3_path = models.ImageField(blank=True, storage=PublicMediaStorage)
     role = models.CharField(max_length=9, choices=Roles.choices)
     title = models.CharField(max_length=80)
     is_blocked = models.BooleanField(default=False)
