@@ -1,13 +1,18 @@
 import boto3
 from pages.models import Page
-from core.settings import EMAIL_ADDRESS, ses
+from core.settings import (EMAIL_ADDRESS, LOCAL_AWS_URL, AWS_ACCESS_KEY_ID,
+                           AWS_SECRET_ACCESS_KEY, AWS_SES_REGION_NAME)
 
 
 class EmailService:
     CHARSET = 'UTF-8'
 
     def __init__(self):
-        self.ses = ses
+        self.ses = boto3.client('ses', endpoint_url=LOCAL_AWS_URL,
+                                aws_access_key_id=AWS_ACCESS_KEY_ID,
+                                aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                                region_name=AWS_SES_REGION_NAME)
+        self.ses.verify_email_address(EmailAddress='Innotter@gmail.com')
 
     def send_notifications_about_new_post(self, page_id: int) -> None:
         destination = self.get_destination(page_id)

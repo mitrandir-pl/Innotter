@@ -133,11 +133,6 @@ AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_SES_REGION_NAME = os.environ.get('AWS_SES_REGION_NAME')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-ses = boto3.client('ses', endpoint_url=LOCAL_AWS_URL,
-                   aws_access_key_id=AWS_ACCESS_KEY_ID,
-                   aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                   region_name=AWS_SES_REGION_NAME)
-ses.verify_email_address(EmailAddress='Innotter@gmail.com')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
