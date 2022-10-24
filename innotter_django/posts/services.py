@@ -4,7 +4,6 @@ from core.settings import EMAIL_ADDRESS, ses
 
 
 class EmailService:
-    ENDPOINT_URL = 'http://localhost:4566/'
     CHARSET = 'UTF-8'
 
     def __init__(self):

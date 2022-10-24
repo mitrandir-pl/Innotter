@@ -127,27 +127,22 @@ USE_I18N = True
 
 USE_TZ = True
 
-ENDPOINT_URL = os.environ.get('ENDPOINT_URL')
+LOCAL_AWS_URL = os.environ.get('LOCAL_AWS_URL')
 EMAIL_ADDRESS = os.environ.get('EMAIL_ADDRESS')
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_SES_REGION_NAME = os.environ.get('AWS_SES_REGION_NAME')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-ses = boto3.client('ses', endpoint_url=ENDPOINT_URL,
+ses = boto3.client('ses', endpoint_url=LOCAL_AWS_URL,
                    aws_access_key_id=AWS_ACCESS_KEY_ID,
                    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
                    region_name=AWS_SES_REGION_NAME)
 ses.verify_email_address(EmailAddress='Innotter@gmail.com')
-s3 = boto3.client('s3', endpoint_url=ENDPOINT_URL,
-                  aws_access_key_id=AWS_ACCESS_KEY_ID,
-                  aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                  region_name=AWS_SES_REGION_NAME)
-s3.create_bucket(Bucket=AWS_STORAGE_BUCKET_NAME)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-AWS_S3_ENDPOINT_URL = f'{ENDPOINT_URL}'
+AWS_S3_ENDPOINT_URL = f'{LOCAL_AWS_URL}'
 AWS_DEFAULT_ACL = None
 AWS_S3_URL_PROTOCOL = 'http:'
 AWS_S3_CUSTOM_DOMAIN = f'localhost:4566/{AWS_STORAGE_BUCKET_NAME}'
