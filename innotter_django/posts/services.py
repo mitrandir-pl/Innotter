@@ -1,7 +1,6 @@
 import boto3
 from pages.models import Page
-from core.settings import (EMAIL_ADDRESS, EMAIL_ADDRESS, AWS_SES_REGION_NAME,
-                           AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ses)
+from core.settings import EMAIL_ADDRESS, ses
 
 
 class EmailService:
