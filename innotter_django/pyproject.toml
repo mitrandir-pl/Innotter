@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "innotter_django"
+version = "0.1.0"
+description = ""
+authors = ["mitrandir-pl <leshkopavel@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Django = "^4.1"
+djangorestframework = "^3.13.1"
+psycopg2-binary = "^2.9.3"
+django-dotenv = "^1.4.2"
+drf-yasg = "^1.21.3"
+PyJWT = "^2.4.0"
+pytest-django = "^4.5.2"
+coverage = "^6.4.4"
+pytest-factoryboy = "^2.5.0"
+boto3 = "^1.24.87"
+celery = "^5.2.7"
+django-storages = "^1.13.1"
+Pillow = "^9.2.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

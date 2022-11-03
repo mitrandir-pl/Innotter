@@ -1,0 +1,8 @@
+NO_SUCH_USER_OR_USER_NOT_ACTIVE_MESSAGE = 'User not found or not active'
+EMAIL_REQUIRED_MESSAGE = 'You must provide an email address'
+WRONG_DATE_MESSAGE = 'wrong date input'
+WRONG_PASSWORD_MESSAGE = 'Wrong password'
+TOKEN_PREFIX_ERROR_MESSAGE = 'Token prefix missing'
+ACCESS_TOKEN_EXPIRED_MESSAGE = 'access_token expired'
+AUTHENTICATION_FAILED_MESSAGE = 'Authentication credentials were not provided.'
+REFRESH_TOKEN_EXPIRED_MESSAGE = 'expired refresh token, please login again.'
